@@ -2,8 +2,9 @@ package rt
 
 import (
 	"encoding/json"
-	"fmt"
+	"io/ioutil"
 	"net/http"
+	"net/url"
 )
 
 const (
@@ -40,4 +41,30 @@ type Movie struct {
 	AbridgedCast     []Actor           `json:"abridged_cast"`
 	AlternateIds     map[string]string `json:"alternate_ids"`
 	Links            map[string]string
+}
+
+type MovieSearchResponse struct {
+	Total        int
+	Movies       []Movie
+	Links        map[string]string
+	LinkTemplate string
+}
+
+func (r *RottenTomatoes) MovieSearch(q string) ([]Movie, error) {
+	v := url.Values{}
+	v.Set("q", q)
+	v.Set("apikey", r.Key)
+	searchURL := apiURL + "/movies.json?" + v.Encode()
+	resp, err := http.Get(searchURL)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	var m MovieSearchResponse
+	err = json.Unmarshal(body, &m)
+	if err != nil {
+		return nil, err
+	}
+	return m.Movies, nil
 }
