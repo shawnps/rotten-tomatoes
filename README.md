@@ -1,10 +1,12 @@
-rotten-tomatoes
+rt
 ===============
 
 Rotten Tomatoes API client
 
 ## Usage:
 ```Go
+import "github.com/shawnps/rt"
+
 apiKey := "your key here"
 rt := rt.RottenTomatoes{apiKey}
 movies, err := rt.MovieSearch("Good Will Hunting")
