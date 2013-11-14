@@ -2,9 +2,11 @@ package rt
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"strconv"
 )
 
 const (
@@ -28,7 +30,7 @@ type Actor struct {
 }
 
 type Movie struct {
-	Id               string
+	Id               interface{}
 	Title            string
 	Year             int
 	MPAARating       string `json:"mpaa_rating"`
@@ -69,6 +71,20 @@ func (r *RottenTomatoes) getRequest(params map[string]string, endpoint string) (
 	return body, nil
 }
 
+// IDs in the list movies response are strings,
+// so we convert them to ints
+func convertStrIds(movies []Movie) ([]Movie, error) {
+	for i, mov := range movies {
+		movie := &movies[i]
+		id, err := strconv.Atoi(mov.Id.(string))
+		if err != nil {
+			return nil, err
+		}
+		movie.Id = id
+	}
+	return movies, nil
+}
+
 func (r *RottenTomatoes) SearchMovies(q string) ([]Movie, error) {
 	p := map[string]string{"q": q}
 	e := "/movies.json"
@@ -81,5 +97,29 @@ func (r *RottenTomatoes) SearchMovies(q string) ([]Movie, error) {
 	if err != nil {
 		return nil, err
 	}
-	return m.Movies, nil
+	movies, err := convertStrIds(m.Movies)
+	if err != nil {
+		return nil, err
+	}
+
+	return movies, nil
+}
+
+func (r *RottenTomatoes) GetMovie(id string) (Movie, error) {
+	p := map[string]string{"id": id}
+	e := fmt.Sprintf("/movies/%s.json", id)
+	resp, err := r.getRequest(p, e)
+	if err != nil {
+		return Movie{}, err
+	}
+	var m Movie
+	err = json.Unmarshal(resp, &m)
+	if err != nil {
+		return Movie{}, err
+	}
+	// Individual Movie responses contain numeric Ids and not strings
+	// like the list movies response, so we have to convert it here
+	m.Id = int(m.Id.(float64))
+
+	return m, nil
 }
