@@ -18,10 +18,10 @@ type RottenTomatoes struct {
 }
 
 type Ratings struct {
-	CriticsRating  string `json:"critics_rating"`
-	CriticsScore   int    `json:"critics_score"`
-	AudienceRating string `json:"audience_rating"`
-	AudienceScore  int    `json:"audience_score"`
+	CriticsRating  string `json:"critics_rating,omitempty"`
+	CriticsScore   int    `json:"critics_score,omitempty"`
+	AudienceRating string `json:"audience_rating,omitempty"`
+	AudienceScore  int    `json:"audience_score,omitempty"`
 }
 type Actor struct {
 	Name       string
@@ -33,8 +33,8 @@ type Movie struct {
 	Id               interface{}
 	Title            string
 	Year             int
-	MPAARating       string `json:"mpaa_rating"`
-	Runtime          int
+	MPAARating       string            `json:"mpaa_rating"`
+	Runtime          interface{}       `json:omitempty"`
 	CriticsConsensus string            `json:"critics_consensus"`
 	ReleaseDates     map[string]string `json:"release_dates"`
 	Ratings          Ratings
@@ -46,7 +46,7 @@ type Movie struct {
 }
 
 type MovieSearchResponse struct {
-	Total        int
+	Total        int `json:omitempty`
 	Movies       []Movie
 	Links        map[string]string
 	LinkTemplate string
@@ -69,6 +69,29 @@ func (r *RottenTomatoes) getRequest(params map[string]string, endpoint string) (
 		return nil, err
 	}
 	return body, nil
+}
+
+// IDs in the list movies response are strings,
+// so we convert them to ints
+func convertStrIds(movies []Movie) ([]Movie, error) {
+	for i, mov := range movies {
+		movie := &movies[i]
+		id, err := strconv.Atoi(mov.Id.(string))
+		if err != nil {
+			return nil, err
+		}
+		movie.Id = id
+		// The Runtime is returned as an empty string "" when
+		// it is not available, so we have to discover its type and
+		// set it to nil if it's a string.
+		switch mov.Runtime.(type) {
+		case int:
+			movie.Runtime = mov.Runtime.(int)
+		case string:
+			movie.Runtime = nil
+		}
+	}
+	return movies, nil
 }
 
 func movieListRequest(body []byte) ([]Movie, error) {
@@ -99,16 +122,17 @@ func (r *RottenTomatoes) BoxOffice(c string) ([]Movie, error) {
 	return movies, nil
 }
 
-// IDs in the list movies response are strings,
-// so we convert them to ints
-func convertStrIds(movies []Movie) ([]Movie, error) {
-	for i, mov := range movies {
-		movie := &movies[i]
-		id, err := strconv.Atoi(mov.Id.(string))
-		if err != nil {
-			return nil, err
-		}
-		movie.Id = id
+func (r *RottenTomatoes) OpeningMovies(c string) ([]Movie, error) {
+	p := map[string]string{"country": c}
+	e := "/lists/movies/opening.json"
+
+	resp, err := r.getRequest(p, e)
+	if err != nil {
+		return nil, err
+	}
+	movies, err := movieListRequest(resp)
+	if err != nil {
+		return nil, err
 	}
 	return movies, nil
 }
