@@ -71,6 +71,19 @@ func (r *RottenTomatoes) getRequest(params map[string]string, endpoint string) (
 	return body, nil
 }
 
+func movieListRequest(body []byte) ([]Movie, error) {
+	var m MovieSearchResponse
+	err := json.Unmarshal(body, &m)
+	if err != nil {
+		return nil, err
+	}
+	movies, err := convertStrIds(m.Movies)
+	if err != nil {
+		return nil, err
+	}
+	return movies, nil
+}
+
 func (r *RottenTomatoes) BoxOffice(c string) ([]Movie, error) {
 	p := map[string]string{"country": c}
 	e := "/lists/movies/box_office.json"
@@ -79,16 +92,10 @@ func (r *RottenTomatoes) BoxOffice(c string) ([]Movie, error) {
 	if err != nil {
 		return nil, err
 	}
-	var m MovieSearchResponse
-	err = json.Unmarshal(resp, &m)
+	movies, err := movieListRequest(resp)
 	if err != nil {
 		return nil, err
 	}
-	movies, err := convertStrIds(m.Movies)
-	if err != nil {
-		return nil, err
-	}
-
 	return movies, nil
 }
 
@@ -113,16 +120,10 @@ func (r *RottenTomatoes) SearchMovies(q string) ([]Movie, error) {
 	if err != nil {
 		return nil, err
 	}
-	var m MovieSearchResponse
-	err = json.Unmarshal(resp, &m)
+	movies, err := movieListRequest(resp)
 	if err != nil {
 		return nil, err
 	}
-	movies, err := convertStrIds(m.Movies)
-	if err != nil {
-		return nil, err
-	}
-
 	return movies, nil
 }
 
@@ -141,6 +142,5 @@ func (r *RottenTomatoes) GetMovie(id string) (Movie, error) {
 	// Individual Movie responses contain numeric Ids and not strings
 	// like the list movies response, so we have to convert it here
 	m.Id = int(m.Id.(float64))
-
 	return m, nil
 }
