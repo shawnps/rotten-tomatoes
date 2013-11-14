@@ -50,19 +50,34 @@ type MovieSearchResponse struct {
 	LinkTemplate string
 }
 
-func (r *RottenTomatoes) MovieSearch(q string) ([]Movie, error) {
+func (r *RottenTomatoes) getRequest(params map[string]string, endpoint string) ([]byte, error) {
 	v := url.Values{}
-	v.Set("q", q)
 	v.Set("apikey", r.Key)
-	searchURL := apiURL + "/movies.json?" + v.Encode()
+	for key, val := range params {
+		v.Set(key, val)
+	}
+	searchURL := apiURL + endpoint + "?" + v.Encode()
 	resp, err := http.Get(searchURL)
 	if err != nil {
 		return nil, err
 	}
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	return body, nil
+}
+
+func (r *RottenTomatoes) SearchMovies(q string) ([]Movie, error) {
+	p := map[string]string{"q": q}
+	e := "/movies.json"
+	resp, err := r.getRequest(p, e)
+	if err != nil {
+		return nil, err
+	}
 	var m MovieSearchResponse
-	err = json.Unmarshal(body, &m)
+	err = json.Unmarshal(resp, &m)
 	if err != nil {
 		return nil, err
 	}
