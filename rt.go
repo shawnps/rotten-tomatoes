@@ -71,11 +71,11 @@ func (r *RottenTomatoes) getRequest(params map[string]string, endpoint string) (
 	return body, nil
 }
 
-// IDs in the list movies response are strings,
-// so we convert them to ints
-func convertStrIds(movies []Movie) ([]Movie, error) {
+func convertMovies(movies []Movie) ([]Movie, error) {
 	for i, mov := range movies {
 		movie := &movies[i]
+		// IDs in the list movies response are strings,
+		// so we convert them to ints
 		id, err := strconv.Atoi(mov.Id.(string))
 		if err != nil {
 			return nil, err
@@ -100,7 +100,7 @@ func movieListRequest(body []byte) ([]Movie, error) {
 	if err != nil {
 		return nil, err
 	}
-	movies, err := convertStrIds(m.Movies)
+	movies, err := convertMovies(m.Movies)
 	if err != nil {
 		return nil, err
 	}
