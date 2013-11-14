@@ -71,6 +71,27 @@ func (r *RottenTomatoes) getRequest(params map[string]string, endpoint string) (
 	return body, nil
 }
 
+func (r *RottenTomatoes) BoxOffice(c string) ([]Movie, error) {
+	p := map[string]string{"country": c}
+	e := "/lists/movies/box_office.json"
+
+	resp, err := r.getRequest(p, e)
+	if err != nil {
+		return nil, err
+	}
+	var m MovieSearchResponse
+	err = json.Unmarshal(resp, &m)
+	if err != nil {
+		return nil, err
+	}
+	movies, err := convertStrIds(m.Movies)
+	if err != nil {
+		return nil, err
+	}
+
+	return movies, nil
+}
+
 // IDs in the list movies response are strings,
 // so we convert them to ints
 func convertStrIds(movies []Movie) ([]Movie, error) {
