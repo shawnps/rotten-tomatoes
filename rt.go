@@ -58,8 +58,8 @@ func (r *RottenTomatoes) getRequest(params map[string]string, endpoint string) (
 	for key, val := range params {
 		v.Set(key, val)
 	}
-	searchURL := apiURL + endpoint + "?" + v.Encode()
-	resp, err := http.Get(searchURL)
+	u := apiURL + endpoint + "?" + v.Encode()
+	resp, err := http.Get(u)
 	if err != nil {
 		return nil, err
 	}
