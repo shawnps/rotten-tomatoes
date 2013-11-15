@@ -1,9 +1,8 @@
-development status: incomplete, many endpoints still missing
-
-rt
-===============
+# rt
 
 Rotten Tomatoes API client
+
+Development status: incomplete, many endpoints still missing
 
 ## Usage:
 ```Go
