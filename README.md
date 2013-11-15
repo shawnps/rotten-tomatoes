@@ -1,3 +1,5 @@
+development status: incomplete, many endpoints still missing
+
 rt
 ===============
 
