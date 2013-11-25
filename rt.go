@@ -32,9 +32,9 @@ type Actor struct {
 type Movie struct {
 	Id               interface{}
 	Title            string
-	Year             int
+	Year             interface{}       `json:"year,omitempty"`
 	MPAARating       string            `json:"mpaa_rating"`
-	Runtime          interface{}       `json:omitempty"`
+	Runtime          interface{}       `json:"runtime,omitempty"`
 	CriticsConsensus string            `json:"critics_consensus"`
 	ReleaseDates     map[string]string `json:"release_dates"`
 	Ratings          Ratings
@@ -89,6 +89,13 @@ func convertMovies(movies []Movie) ([]Movie, error) {
 			movie.Runtime = mov.Runtime.(int)
 		case string:
 			movie.Runtime = nil
+		}
+		// Same for Year
+		switch mov.Year.(type) {
+		case int:
+			movie.Year = mov.Year.(int)
+		case string:
+			movie.Year = nil
 		}
 	}
 	return movies, nil
