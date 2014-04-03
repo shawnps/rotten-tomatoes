@@ -19,10 +19,11 @@ type RottenTomatoes struct {
 
 type Ratings struct {
 	CriticsRating  string `json:"critics_rating,omitempty"`
-	CriticsScore   int    `json:"critics_score,omitempty"`
+	CriticsScore   *int   `json:"critics_score,omitempty"`
 	AudienceRating string `json:"audience_rating,omitempty"`
 	AudienceScore  int    `json:"audience_score,omitempty"`
 }
+
 type Actor struct {
 	Name       string
 	Id         string
@@ -96,6 +97,9 @@ func convertMovies(movies []Movie) ([]Movie, error) {
 			movie.Year = mov.Year.(int)
 		case string:
 			movie.Year = nil
+		}
+		if *movie.Ratings.CriticsScore == -1 {
+			movie.Ratings.CriticsScore = nil
 		}
 	}
 	return movies, nil
