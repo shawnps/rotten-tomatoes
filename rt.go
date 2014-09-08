@@ -14,7 +14,8 @@ const (
 )
 
 type RottenTomatoes struct {
-	Key string
+	Client http.Client
+	Key    string
 }
 
 type Ratings struct {
@@ -60,7 +61,7 @@ func (r *RottenTomatoes) getRequest(params map[string]string, endpoint string) (
 		v.Set(key, val)
 	}
 	u := apiURL + endpoint + "?" + v.Encode()
-	resp, err := http.Get(u)
+	resp, err := r.Client.Get(u)
 	if err != nil {
 		return nil, err
 	}
