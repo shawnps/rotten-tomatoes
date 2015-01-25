@@ -48,7 +48,7 @@ type Movie struct {
 }
 
 type MovieSearchResponse struct {
-	Total        int `json:omitempty`
+	Total        int `json:"total,omitempty"`
 	Movies       []Movie
 	Links        map[string]string
 	LinkTemplate string
