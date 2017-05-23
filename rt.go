@@ -1,6 +1,7 @@
 package rt
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -14,7 +15,7 @@ const (
 )
 
 type RottenTomatoes struct {
-	Client http.Client
+	Client *http.Client
 	Key    string
 }
 
@@ -107,6 +108,9 @@ func convertMovies(movies []Movie) ([]Movie, error) {
 }
 
 func movieListRequest(body []byte) ([]Movie, error) {
+	if bytes.Equal(body, []byte("<h1>Developer Inactive</h1>")) {
+		return nil, fmt.Errorf("Developer Inactive: check RottenTomatoes API credentials")
+	}
 	var m MovieSearchResponse
 	err := json.Unmarshal(body, &m)
 	if err != nil {
